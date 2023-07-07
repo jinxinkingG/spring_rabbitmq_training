@@ -1,14 +1,10 @@
 package com.example.demo.util;
 
 import com.example.demo.config.RabbitMQConfig;
-import com.example.demo.entity.MqMessageEntity;
-import com.example.demo.listener.MqListener;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.Address;
 import org.springframework.amqp.core.Message;
-import org.springframework.amqp.core.ReceiveAndReplyCallback;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -45,28 +41,75 @@ public class RabbitMQUtil {
     }
 
     /**
+     * 默认消费默认队列
      * 直接消费消息
      * @return 消息体
      */
     public Message receiveMessage(){
-        return rabbitTemplate.receive(RabbitMQConfig.DEFAULT_QUEUE_NAME);
+        return receiveMessage(RabbitMQConfig.DEFAULT_QUEUE_NAME);
     }
 
+    /**
+     * 直接消费消息
+     * @param queueName 队列名称
+     * @return 消息体
+     */
+    public Message receiveMessage(String queueName){
+        return rabbitTemplate.receive(queueName);
+    }
+
+    /**
+     * 默认取默认队列
+     * 直接消费消息
+     * @return 消息体
+     */
     public Object receiveNoMessageMsg(){
-        return rabbitTemplate.receiveAndConvert(RabbitMQConfig.DEFAULT_QUEUE_NAME);
+        return receiveNoMessageMsg(RabbitMQConfig.DEFAULT_QUEUE_NAME);
     }
 
-    public Object receiveMsgAndTransfer(){
-        final Object[] result = new Object[1];
-        rabbitTemplate.receiveAndReply(RabbitMQConfig.DEFAULT_QUEUE_NAME,payload->payload+"reply",((request, reply) ->{
-            log.info(reply);
-            result[0] =reply;
-            return new Address(RabbitMQConfig.DEAD_EXCHANGE_NAME,RabbitMQConfig.DEAD_ROUTING_KEY);
-        }));
-        return result[0];
+    /**
+     * 直接消费消息
+     * @param queueName 队列名称
+     * @return 消息体
+     */
+    public Object receiveNoMessageMsg(String queueName){
+        return rabbitTemplate.receiveAndConvert(queueName);
     }
 
+    /**
+     * 默认转发至死信
+     * 消费消息并回复消息
+     * @return 状态
+     */
+    public boolean receiveMsgAndTransfer(){
+        return receiveMsgAndTransfer(RabbitMQConfig.DEAD_EXCHANGE_NAME,RabbitMQConfig.DEAD_ROUTING_KEY);
+    }
+
+    /**
+     * 消费消息并转发消息至
+     * @param exchangeName 交换机名称
+     * @param routingKey 路由key
+     * @return 状态
+     */
+    public boolean receiveMsgAndTransfer(String exchangeName,String routingKey){
+        return rabbitTemplate.receiveAndReply(RabbitMQConfig.DEFAULT_QUEUE_NAME,payload->payload+"reply",((request, reply) ->
+                new Address(exchangeName,routingKey)
+        ));
+    }
+
+    /**
+     * 消费死信消息
+     * @return 消息体
+     */
     public Object receiveDeadNoMessageMsg(){
         return rabbitTemplate.receiveAndConvert(RabbitMQConfig.DEAD_QUEUE_NAME);
+    }
+
+    /**
+     * 消费死信消息
+     * @return 消息体
+     */
+    public Message receiveDeadMsg(){
+        return rabbitTemplate.receive(RabbitMQConfig.DEAD_QUEUE_NAME);
     }
 }
