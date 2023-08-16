@@ -5,6 +5,13 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 
+/**
+ * rabbitmq配置类
+ * @author 巨联开发平台组
+ * @version v3.1.0
+ * @copyright 巨联数字科技有限公司
+ * @date 2023/6/30 14:45
+ */
 @Configuration
 public class RabbitMQConfig {
 

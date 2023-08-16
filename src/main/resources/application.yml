@@ -1,7 +1,13 @@
 spring:
   rabbitmq:
-    host: 192.168.7.226
+    #host: 192.168.7.226
+    host: 127.0.0.1
     port: 5672
     username: guest
     password: guest
     virtual-host: /
+    publisher-confirm-type: correlated
+    listener:
+      simple:
+        auto-startup: true
+        acknowledge-mode: manual
